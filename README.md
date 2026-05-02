@@ -39,8 +39,8 @@ How It Works:
 
 Run Locally
 
-git clone https://github.com/prabha-ai-dev/fast-rag-pdf-chat
-cd fast-rag-pdf-chat
+git clone https://github.com/prabha-ai-dev/rag-pdf-chat
+cd rag-pdf-chat
 
 ---
 
