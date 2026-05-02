@@ -1,5 +1,67 @@
+# ----------------------
+# Python
+# ----------------------
 __pycache__/
-*.pyc
-*.pdf
-db_*/
+*.py[cod]
+*$py.class
+
+# ----------------------
+# Virtual Environments
+# ----------------------
+venv/
+env/
+ai_env/
+.venv/
+
+# ----------------------
+# Environment Variables
+# ----------------------
 .env
+.env.*
+
+# ----------------------
+# Streamlit
+# ----------------------
+.streamlit/
+
+# ----------------------
+# Vector Databases (IMPORTANT for your project)
+# ----------------------
+chroma_db/
+db_*/
+*.sqlite3
+
+# ----------------------
+# Temporary Files
+# ----------------------
+temp_*.pdf
+
+# ----------------------
+# Logs
+# ----------------------
+*.log
+
+# ----------------------
+# OS Files
+# ----------------------
+.DS_Store
+Thumbs.db
+
+# ----------------------
+# IDE / Editor
+# ----------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------
+# Build / Cache
+# ----------------------
+.cache/
+.pytest_cache/
+
+# ----------------------
+# Jupyter (if you use later)
+# ----------------------
+.ipynb_checkpoints/
