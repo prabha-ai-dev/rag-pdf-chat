@@ -1,71 +1,90 @@
-Fast RAG PDF Chat:
+RAG PDF Chat
 
-An AI-powered web app that allows users to upload a PDF and ask questions about its content using Retrieval-Augmented Generation (RAG).
+An AI-powered web app that lets you upload a PDF and chat with it using Retrieval-Augmented Generation (RAG) + Groq LLM.
 
 ---
 
 Features:
 
-* 📄 Upload any PDF document
-* 💬 Ask questions based on the document
-* ⚡ Fast responses using optimized models
-* 📚 Displays source chunks for transparency
-* 🔄 Reset option to clear session
+-  Upload any PDF document  
+-  Ask questions about the content  
+-  Supports **single-word queries** (auto-expanded for better answers)  
+-  Fast responses using **Groq LLM (Llama 3.3 70B)**  
+-  Semantic search with embeddings  
+-  Clean chat UI with conversation history  
+-  Reset option to upload a new PDF  
 
 ---
 
 Tech Stack:
 
-* Streamlit (UI)
-* LangChain (RAG pipeline)
-* HuggingFace Transformers (LLM)
-* ChromaDB (vector database)
-* Sentence Transformers (embeddings)
+Streamlit – UI  
+LangChain – RAG pipeline  
+ChromaDB – Vector database  
+HuggingFace Embeddings (BAAI/bge-base-en-v1.5)  
+Groq API (Llama 3.3 70B) – Answer generation  
 
 ---
 
 How It Works:
 
-1. The uploaded PDF is loaded and split into smaller chunks
-2. Each chunk is converted into embeddings
-3. Embeddings are stored in a vector database (ChromaDB)
-4. User query is matched with relevant chunks
-5. LLM generates an answer using retrieved context
+1. Upload a PDF  
+2. Text is split into chunks  
+3. Chunks are converted into embeddings  
+4. Stored in Chroma vector database  
+5. User query retrieves relevant chunks  
+6. Groq LLM generates answer from context  
 
 ---
 
-Run Locally:
+Run Locally
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
+git clone https://github.com/prabha-ai-dev/fast-rag-pdf-chat
+cd fast-rag-pdf-chat
 
 ---
 
-Example Questions:
+Usage:
 
-* What is artificial intelligence?
-* Explain machine learning
-* Summarize the document
+Enter your Groq API Key
+Upload a PDF
+Start asking questions
 
----
-
-Limitations:
-
-* Works best when questions are related to document wording
-* May fail on very vague or unrelated queries
-* Runs on CPU (slower for large PDFs)
 
 ---
 
-Future Improvements:
+Example Queries:
 
-* Better UI (chat bubbles, styling)
-* Add conversation memory
-* Deploy online for public access
-* Improve semantic understanding
+What is artificial intelligence?
+machine learning
+embeddings
+summarize this document
 
 ---
 
-Built as a beginner AI project to learn RAG, embeddings, and LLM integration.
+Example Queries:
+
+What is artificial intelligence?
+machine learning
+embeddings
+summarize this document
+
+---
+
+Project Note
+
+Built as a hands-on project to learn:
+
+RAG pipelines
+Embeddings & vector search
+LLM API integration
+Real-world AI app development
+
+---
+
+What changed :
+
+used Groq (modern LLM) 
+improved query handling (single-word support)  
+built a chat-style UI  
+understand RAG pipeline clearly
