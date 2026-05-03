@@ -1,90 +1,79 @@
-RAG PDF Chat
+PDF Chat (RAG-based Chatbot):
 
-An AI-powered web app that lets you upload a PDF and chat with it using Retrieval-Augmented Generation (RAG) + Groq LLM.
+An AI-powered web app that allows users to upload a PDF and ask questions about its content using Retrieval-Augmented Generation (RAG).
 
 ---
 
 Features:
 
--  Upload any PDF document  
--  Ask questions about the content  
--  Supports **single-word queries** (auto-expanded for better answers)  
--  Fast responses using **Groq LLM (Llama 3.3 70B)**  
--  Semantic search with embeddings  
--  Clean chat UI with conversation history  
--  Reset option to upload a new PDF  
+- Upload any PDF document
+- Ask questions based on the document
+- Context-aware answers using semantic search
+- Displays source chunks for transparency
+- Fast responses using Groq LLM
+- Handles invalid API keys and errors gracefully
+- Handles irrelevant queries intelligently
 
 ---
 
 Tech Stack:
 
-Streamlit – UI  
-LangChain – RAG pipeline  
-ChromaDB – Vector database  
-HuggingFace Embeddings (BAAI/bge-base-en-v1.5)  
-Groq API (Llama 3.3 70B) – Answer generation  
+- Python
+- Streamlit (UI)
+- LangChain (RAG pipeline)
+- Chroma (Vector Database)
+- HuggingFace Embeddings (BAAI/bge-base-en-v1.5)
+- Groq API (LLM inference)
 
 ---
 
 How It Works:
 
-1. Upload a PDF  
-2. Text is split into chunks  
-3. Chunks are converted into embeddings  
-4. Stored in Chroma vector database  
-5. User query retrieves relevant chunks  
-6. Groq LLM generates answer from context  
+1. User uploads a PDF
+2. Text is extracted and split into chunks
+3. Chunks are converted into embeddings
+4. Stored in Chroma vector database
+5. User asks a question
+6. Relevant chunks are retrieved
+7. LLM generates answer based on context
 
 ---
 
-Run Locally
+Run Locally:
 
-git clone https://github.com/prabha-ai-dev/rag-pdf-chat
-cd rag-pdf-chat
-
----
-
-Usage:
-
-Enter your Groq API Key
-Upload a PDF
-Start asking questions
-
+```bash
+git clone https://github.com/your-username/pdf-rag-chatbot.git
+cd pdf-rag-chatbot
+pip install -r requirements.txt
+streamlit run app.py
 
 ---
 
-Example Queries:
+Notes:
 
-What is artificial intelligence?
-machine learning
-embeddings
-summarize this document
+This project demonstrates practical implementation of Retrieval-Augmented Generation (RAG) including:
 
----
-
-Example Queries:
-
-What is artificial intelligence?
-machine learning
-embeddings
-summarize this document
+document understanding
+semantic search
+context-aware response generation
 
 ---
 
-Project Note
+Future Improvements:
 
-Built as a hands-on project to learn:
-
-RAG pipelines
-Embeddings & vector search
-LLM API integration
-Real-world AI app development
+Add support for multiple PDFs
+Add chat memory across sessions
+Improve retrieval with hybrid search
+Add streaming responses (typing effect)
 
 ---
 
-What changed :
+Deployment:
 
-used Groq (modern LLM) 
-improved query handling (single-word support)  
-built a chat-style UI  
-understand RAG pipeline clearly
+This app can be deployed easily on Streamlit Cloud.
+
+---
+
+Author:
+
+prabha
