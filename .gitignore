@@ -1,67 +1,23 @@
-# ----------------------
-# Python
-# ----------------------
+Python:
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
+*.pyd
 
-# ----------------------
-# Virtual Environments
-# ----------------------
-venv/
-env/
+Virtual environment:
 ai_env/
-.venv/
-
-# ----------------------
-# Environment Variables
-# ----------------------
+venv/
 .env
-.env.*
 
-# ----------------------
-# Streamlit
-# ----------------------
-.streamlit/
+Streamlit secrets:
+.streamlit/secrets.toml
 
-# ----------------------
-# Vector Databases (IMPORTANT for your project)
-# ----------------------
+Chroma DB (very important to ignore):
 chroma_db/
-db_*/
-*.sqlite3
 
-# ----------------------
-# Temporary Files
-# ----------------------
+Temporary files:
 temp_*.pdf
 
-# ----------------------
-# Logs
-# ----------------------
-*.log
-
-# ----------------------
-# OS Files
-# ----------------------
+OS files:
 .DS_Store
 Thumbs.db
-
-# ----------------------
-# IDE / Editor
-# ----------------------
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# ----------------------
-# Build / Cache
-# ----------------------
-.cache/
-.pytest_cache/
-
-# ----------------------
-# Jupyter (if you use later)
-# ----------------------
-.ipynb_checkpoints/
