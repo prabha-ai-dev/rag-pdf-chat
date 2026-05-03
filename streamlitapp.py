@@ -9,7 +9,6 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from groq import Groq
 
-# ------------------ UI ------------------
 st.set_page_config(page_title="PDF Chat", layout="centered")
 
 st.markdown("""
@@ -38,7 +37,6 @@ st.markdown("""
 
 st.title("📄 PDF Chat")
 
-# ------------------ SESSION ------------------
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
 
@@ -51,7 +49,6 @@ if "groq_key" not in st.session_state:
 if "setup_done" not in st.session_state:
     st.session_state.setup_done = False
 
-# ------------------ EMBEDDINGS ------------------
 @st.cache_resource
 def load_embeddings():
     return HuggingFaceEmbeddings(
@@ -59,7 +56,6 @@ def load_embeddings():
         encode_kwargs={"normalize_embeddings": True}
     )
 
-# ------------------ API KEY VALIDATION ------------------
 def validate_groq_key(api_key: str):
     try:
         client = Groq(api_key=api_key)
@@ -77,7 +73,6 @@ def validate_groq_key(api_key: str):
     except Exception as e:
         return False, str(e)
 
-# ------------------ LLM ------------------
 def get_groq_answer(query: str, context: str, api_key: str) -> str:
     try:
         client = Groq(api_key=api_key)
@@ -101,7 +96,6 @@ def get_groq_answer(query: str, context: str, api_key: str) -> str:
     except Exception as e:
         return f"❌ API ERROR: {str(e)}"
 
-# ------------------ RAG ------------------
 def answer_question(query: str, retriever, api_key: str):
     try:
         docs = retriever.invoke(query)
@@ -117,7 +111,6 @@ def answer_question(query: str, retriever, api_key: str):
     except Exception as e:
         return f"❌ Error: {str(e)}", []
 
-# ------------------ SETUP ------------------
 if not st.session_state.setup_done:
 
     with st.form("setup_form"):
@@ -181,7 +174,6 @@ if not st.session_state.setup_done:
                 os.remove(file_path)
                 st.rerun()
 
-# ------------------ CHAT ------------------
 else:
 
     for q, a in st.session_state.history:
