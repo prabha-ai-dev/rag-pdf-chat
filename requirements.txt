@@ -2,8 +2,8 @@ streamlit
 langchain
 langchain-community
 langchain-text-splitters
-chromadb==0.5.23
-sentence-transformers
+chromadb
+fastembed
 pypdf
 groq
 protobuf==3.20.3
