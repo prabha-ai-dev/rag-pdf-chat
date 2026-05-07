@@ -30,7 +30,6 @@ if "history" not in st.session_state:
 @st.cache_resource
 def load_embeddings():
     return FastEmbedEmbeddings()
-    
 
 def ask_llm(query, context):
 
