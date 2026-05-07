@@ -1,23 +1,17 @@
-Python:
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-Virtual environment:
+# Virtual Environment
 ai_env/
 venv/
-.env
 
-Streamlit secrets:
+# Python Cache
+__pycache__/
+*.pyc
+
+# Streamlit Secrets
 .streamlit/secrets.toml
 
-Chroma DB (very important to ignore):
+# Chroma Database
 chroma_db/
 
-Temporary files:
-temp_*.pdf
-
-OS files:
+# OS Files
 .DS_Store
 Thumbs.db
