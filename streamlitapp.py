@@ -5,7 +5,7 @@ import os
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import Chroma
 from groq import Groq
 
@@ -29,13 +29,8 @@ if "history" not in st.session_state:
 
 @st.cache_resource
 def load_embeddings():
-
-    return HuggingFaceEmbeddings(
-        model_name="BAAI/bge-small-en-v1.5",
-        encode_kwargs={
-            "normalize_embeddings": True
-        }
-    )
+    return FastEmbedEmbeddings()
+    
 
 def ask_llm(query, context):
 
