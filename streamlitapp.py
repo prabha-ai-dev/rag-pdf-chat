@@ -1,5 +1,5 @@
 import streamlit as st
-import uuid
+import tempfile
 import shutil
 import os
 
@@ -9,33 +9,16 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from groq import Groq
 
-st.set_page_config(page_title="PDF Chat", layout="centered")
 
-st.markdown("""
-<style>
-#MainMenu, footer, header {visibility: hidden;}
-.block-container {padding-top: 2rem; max-width: 700px;}
+st.set_page_config(
+    page_title="Smart PDF Chat",
+    layout="wide"
+)
 
-.chat-bubble-user {
-    background: #2a2a2a;
-    color: #ffffff;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin: 8px 0;
-    text-align: right;
-}
-.chat-bubble-ai {
-    background: #1e1e1e;
-    color: #ffffff;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin: 8px 0;
-}
-</style>
-""", unsafe_allow_html=True)
+st.title("📄 Smart PDF Chat")
 
-st.title("📄 PDF Chat")
+
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 
 if "retriever" not in st.session_state:
     st.session_state.retriever = None
@@ -43,180 +26,193 @@ if "retriever" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
-if "groq_key" not in st.session_state:
-    st.session_state.groq_key = None
-
-if "setup_done" not in st.session_state:
-    st.session_state.setup_done = False
 
 @st.cache_resource
 def load_embeddings():
+
     return HuggingFaceEmbeddings(
-        model_name="BAAI/bge-base-en-v1.5",
-        encode_kwargs={"normalize_embeddings": True}
+        model_name="BAAI/bge-small-en-v1.5",
+        encode_kwargs={
+            "normalize_embeddings": True
+        }
     )
 
-def validate_groq_key(api_key: str):
-    try:
-        client = Groq(api_key=api_key)
+def ask_llm(query, context):
 
-        res = client.chat.completions.create(
-            messages=[{"role": "user", "content": "ping"}],
-            model="llama-3.3-70b-versatile",
+    client = Groq(api_key=GROQ_API_KEY)
+
+    system_prompt = """
+You are a smart PDF assistant.
+
+Answer ONLY using the provided context.
+
+Rules:
+- Do not make up answers
+- If the answer is missing, say:
+  "Answer not found in document."
+- Keep answers clear and accurate
+- Give detailed answers if context contains details
+"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": system_prompt
+            },
+            {
+                "role": "user",
+                "content": f"""
+Context:
+{context}
+
+Question:
+{query}
+"""
+            }
+        ],
+        temperature=0.2
+    )
+
+    return response.choices[0].message.content.strip()
+
+
+def get_answer(query, retriever):
+
+    if retriever is None:
+        return "📄 Please upload a PDF first.", []
+
+    
+    docs = retriever.invoke(query)
+
+    if not docs:
+        return "🤔 No relevant information found.", []
+
+    
+    docs = docs[:6]
+
+    
+    context = "\n\n".join(
+        doc.page_content.strip()
+        for doc in docs
+    )
+
+
+    answer = ask_llm(query, context)
+
+    return answer, docs
+
+uploaded_file = st.file_uploader(
+    "Upload your PDF",
+    type="pdf"
+)
+
+if uploaded_file:
+
+    with st.spinner("📚 Processing PDF..."):
+
+        
+        shutil.rmtree(
+            "./chroma_db",
+            ignore_errors=True
         )
 
-        if not res or not res.choices:
-            return False, "No response from API"
+        
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=".pdf"
+        ) as tmp:
 
-        return True, None
+            tmp.write(uploaded_file.read())
+            file_path = tmp.name
 
-    except Exception as e:
-        return False, str(e)
+        
+        loader = PyPDFLoader(file_path)
+        documents = loader.load()
 
-def get_groq_answer(query: str, context: str, api_key: str) -> str:
-    try:
-        client = Groq(api_key=api_key)
-
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Answer ONLY using the provided context."
-                },
-                {
-                    "role": "user",
-                    "content": f"Context:\n{context}\n\nQuestion: {query}"
-                }
-            ],
-            model="llama-3.3-70b-versatile",
+        
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=700,
+            chunk_overlap=120
         )
 
-        return chat_completion.choices[0].message.content.strip()
+        chunks = splitter.split_documents(documents)
 
-    except Exception as e:
-        return f"❌ API ERROR: {str(e)}"
+        embeddings = load_embeddings()
 
-def answer_question(query: str, retriever, api_key: str):
-    try:
-        docs = retriever.invoke(query)
+        vectorstore = Chroma.from_documents(
+            documents=chunks,
+            embedding=embeddings,
+            persist_directory="./chroma_db"
+        )
 
-        if not docs:
-            return "🤔 No relevant info found in the document.", []
+        retriever = vectorstore.as_retriever(
+            search_type="mmr",
+            search_kwargs={
+                "k": 6
+            }
+        )
 
-        context = "\n\n".join([doc.page_content.strip() for doc in docs])
-        answer = get_groq_answer(query, context, api_key)
+        st.session_state.retriever = retriever
 
-        return answer, docs
+        os.remove(file_path)
 
-    except Exception as e:
-        return f"❌ Error: {str(e)}", []
+        st.success("✅ PDF processed successfully!")
 
-if not st.session_state.setup_done:
-
-    with st.form("setup_form"):
-        st.subheader("Get Started")
-        api_key = st.text_input("Groq API Key", type="password")
-        uploaded_file = st.file_uploader("Upload PDF", type="pdf")
-        submitted = st.form_submit_button("Start Chatting")
-
-    if submitted:
-        if not api_key or not uploaded_file:
-            st.error("⚠️ Please provide API key and PDF.")
-        else:
-            with st.spinner("Validating API key..."):
-                is_valid, error_msg = validate_groq_key(api_key)
-
-                if not is_valid:
-                    st.error(f"❌ Invalid API Key: {error_msg}")
-                    st.stop()
-
-                st.success("✅ API Key validated!")
-
-            with st.spinner("Processing PDF..."):
-
-                shutil.rmtree("./chroma_db", ignore_errors=True)
-
-                file_path = f"temp_{uuid.uuid4().hex}.pdf"
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.read())
-
-                loader = PyPDFLoader(file_path)
-                docs = loader.load()
-
-                if not docs or all(not doc.page_content.strip() for doc in docs):
-                    st.error("❌ Could not extract text from PDF.")
-                    os.remove(file_path)
-                    st.stop()
-
-                splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=600,
-                    chunk_overlap=100
-                )
-                chunks = splitter.split_documents(docs)
-
-                embeddings = load_embeddings()
-
-                vectorstore = Chroma.from_documents(
-                    documents=chunks,
-                    embedding=embeddings,
-                    persist_directory="./chroma_db"
-                )
-                vectorstore.persist()
-
-                st.session_state.retriever = vectorstore.as_retriever(
-                    search_type="similarity",
-                    search_kwargs={"k": 3}
-                )
-
-                st.session_state.groq_key = api_key
-                st.session_state.setup_done = True
-
-                os.remove(file_path)
-                st.rerun()
-
-else:
+if st.session_state.retriever:
 
     for q, a in st.session_state.history:
-        st.markdown(f'<div class="chat-bubble-user">{q}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="chat-bubble-ai">{a}</div>', unsafe_allow_html=True)
 
-    query = st.chat_input("Ask a question about your PDF...")
+        with st.chat_message("user"):
+            st.markdown(q)
+
+        with st.chat_message("assistant"):
+            st.markdown(a)
+
+    query = st.chat_input(
+        "Ask something from your PDF..."
+    )
 
     if query:
-        query = query.strip()
 
-        if not query:
-            st.warning("⚠️ Enter a question.")
-            st.stop()
+        with st.chat_message("user"):
+            st.markdown(query)
 
-        if len(query.split()) <= 3:
-            query = f"Explain from the document: {query}"
+        with st.spinner("🤖 Thinking..."):
 
-        with st.spinner("Thinking..."):
-            st.toast("🔍 Searching document...")
-            answer, docs = answer_question(
+            answer, docs = get_answer(
                 query,
-                st.session_state.retriever,
-                st.session_state.groq_key
+                st.session_state.retriever
             )
 
-        # ❗ Handle API errors clearly
-        if answer.startswith("❌ API ERROR"):
-            st.error(answer)
-            st.stop()
+        with st.chat_message("assistant"):
+            st.markdown(answer)
 
-        st.session_state.history.append((query, answer))
+        st.session_state.history.append(
+            (query, answer)
+        )
 
         if docs:
-            with st.expander("📚 Sources"):
+
+            with st.expander("📚 Retrieved Context"):
+
                 for i, doc in enumerate(docs):
-                    st.markdown(f"**Source {i+1}:** {doc.page_content[:200]}...")
 
-        st.rerun()
+                    st.markdown(f"### Chunk {i+1}")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+                    st.write(
+                        doc.page_content[:1000]
+                    )
 
-    if st.button("🔄 Upload a different PDF"):
-        st.session_state.clear()
-        shutil.rmtree("./chroma_db", ignore_errors=True)
-        st.rerun()
+
+if st.button("🔄 Reset App"):
+
+    st.session_state.clear()
+
+    shutil.rmtree(
+        "./chroma_db",
+        ignore_errors=True
+    )
+
+    st.rerun()
